@@ -45,8 +45,9 @@ const GRAPH_QL_SCHEMA = gql`
 
   input ListPokemonRequest {
     type: String
-    name: String
+    nameStartsWith: String
     moreThanPoints: Int
+    lessThanPoints: Int
   }
 
   type ListPokemonResponse {
@@ -106,20 +107,23 @@ const resolvers = {
         throw new ApolloError('Must register trainer name first', 'INTERNAL_SERVER_ERROR');
       }
 
-      if (input !== null) {
+      if (input === null) {
         return { pokemon: POKEMON, trainer: { name: trainer } };
       }
 
       let pokemon = POKEMON
 
-      if (input.type !== null) {
+      if (input.type) {
         pokemon = pokemon.filter(a => a.type === input.type)
       }
-      if (input.name !== null) {
-        pokemon = pokemon.filter(a => a.name === input.name)
+      if (input.nameStartsWith) {
+        pokemon = pokemon.filter(a => a.name.toLowerCase().startsWith(input.nameStartsWith.toLowerCase()))
       }
-      if (input.moreThanPoints !== null) {
-        pokemon = pokemon.filter(a => a.moreThanPoints > input.moreThanPoints)
+      if (input.moreThanPoints) {
+        pokemon = pokemon.filter(a => a.totalPoints > input.moreThanPoints)
+      }
+      if (input.lessThanPoints) {
+        pokemon = pokemon.filter(a => a.totalPoints < input.lessThanPoints)
       }
 
       return {
@@ -130,7 +134,7 @@ const resolvers = {
   },
   Mutation: {
     RegisterTrainer: (_, { input }) => {
-      trainer = input.name;
+      trainer = 'Trainer ' + input.name;
       return { message: `Successfully registered ${input.name}!` }
     }
   }
