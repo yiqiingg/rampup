@@ -10,7 +10,14 @@ type Pokemon = {
 
 const PokedexEntry: React.FC = ({ id, name, type, totalPoints }: Pokemon) => {
   return (
-    <View>
+    <View
+      style={{
+        backgroundColor: '#C0C0C0',
+        width: '80%',
+        margin: 'auto',
+        marginTop: '3%',
+      }}
+    >
       <Text>{name}</Text>
       <Text>{type}</Text>
       <Text>{totalPoints}</Text>

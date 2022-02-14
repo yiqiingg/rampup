@@ -31,33 +31,21 @@ const GET_POKEMON = gql`
   }
 `;
 
-// type PokemonType = 'Grass' | 'Fire' | 'Water' | 'Bug' | 'Normal';
-
-const categories = [
-  {
-    itemName: 'Grass',
-  },
-  {
-    itemName: 'Fire',
-  },
-  {
-    itemName: 'Water',
-  },
-  {
-    itemName: 'Bug',
-  },
-  {
-    itemName: 'Normal',
-  },
-];
+const categories = ['Grass', 'Fire', 'Water', 'Bug', 'Normal'];
 
 const PokedexScreen: React.FC = () => {
-  // navigationNULL_POKEMONn, setPokemon] = useState<Pokemon>(NULL_POKEMON);
-
+  // Variables to query by
   const [category, setCategory] = useState<string>('Grass');
+  // const [totalPoints, setTotalPoints] = useState<number>(0); // Note: should query for points > totalPoints
+  // const [name, setName] = useState<string>('');
+
+  // List of returned pokemon objects
   const [pokemons, setPokemons] = useState<Array<Pokemon>>([NULL_POKEMON]);
 
+  // Set up page navigation
   const navigation = useNavigation();
+
+  // Set up graphql stuff
   const { loading, error, data } = useQuery(GET_POKEMON, {
     variables: {
       input: {
@@ -65,6 +53,8 @@ const PokedexScreen: React.FC = () => {
       },
     },
   });
+
+  // Update `pokemons` state variable to reflect data returned by server, when the server responds with new data.
   useEffect(() => {
     if (!loading && data) {
       console.log(data);
@@ -72,15 +62,23 @@ const PokedexScreen: React.FC = () => {
       console.log('data', pokemons, loading, data, '2nd');
     }
     // console.log(loading, loading == false, data, 'lod', error);
-  }, [loading, data, pokemons, category]);
+  }, [loading, data, pokemons, category]); // if any of the state variables in array change, rerun function passed to useEffect
 
   return (
-    <View style={styles.viewStyle}>
-      <View>
+    <View>
+      <View
+        style={{
+          flex: 1,
+          alignSelf: 'center',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          width: '70%',
+        }}
+      >
         <View style={{ flex: 0.3 }}>
           <Text style={styles.textStyle}>Type</Text>
         </View>
-        <View style={{ flex: 0.7, fontSize: 14 }}>
+        <View style={{ flex: 0.3, fontSize: 14 }}>
           <Picker
             itemStyle={styles.itemStyle}
             mode="dropdown"
@@ -88,11 +86,11 @@ const PokedexScreen: React.FC = () => {
             selectedValue={category}
             onValueChange={setCategory}
           >
-            {categories.map((item, index) => (
+            {categories.map((category, index) => (
               <Picker.Item
                 color="#0087F0"
-                label={item.itemName}
-                value={item.itemName}
+                label={category}
+                value={category}
                 key={index}
               />
             ))}
@@ -100,9 +98,9 @@ const PokedexScreen: React.FC = () => {
         </View>
       </View>
       <View>
-        {/* why the fuck is react native so messy... https://reactnative.dev/docs/flatlist#required-renderitem */}
+        {/* https://reactnative.dev/docs/flatlist#required-renderitem */}
         <FlatList
-          data={pokemons}
+          data={pokemons} // [{}, {}, {}] <= each of these objects is "item"
           renderItem={({ item, index, separators }) => (
             <PokedexEntry
               id={item.id}
@@ -111,22 +109,12 @@ const PokedexScreen: React.FC = () => {
               totalPoints={item.totalPoints}
             />
           )}
-          // keyExtractor={(item: Pokemon) => item.id}
+          // keyExtractor={(item) => item.id}
         />
       </View>
     </View>
   );
 };
-
-{
-  /* <View>
-  <FlatList
-    data={pokemon}
-    renderItem={PokedexEntry}
-    keyExtractor={(item) => item.id}
-  />
-</View> */
-}
 
 export default PokedexScreen;
 
