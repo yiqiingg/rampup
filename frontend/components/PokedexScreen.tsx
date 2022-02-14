@@ -1,6 +1,22 @@
-import React, { Component } from 'react';
-import { Picker, View, Text, StyleSheet } from 'react-native';
+import React, { Component, useState, useEffect } from 'react';
+import { Picker, View, Text, StyleSheet, FlatList } from 'react-native';
 import { gql, useQuery } from '@apollo/client';
+import { useNavigation } from '@react-navigation/native';
+import PokedexEntry from './PokedexEntry';
+
+type Pokemon = {
+  id: number;
+  name: string;
+  type: string;
+  totalPoints: number;
+};
+
+const NULL_POKEMON: Pokemon = {
+  id: -1,
+  name: 'you did an oopsie',
+  type: 'you did an oopsie',
+  totalPoints: -1,
+};
 
 const GET_POKEMON = gql`
   query Query($input: ListPokemonRequest) {
@@ -15,47 +31,52 @@ const GET_POKEMON = gql`
   }
 `;
 
-type PokemonType
+// type PokemonType = 'Grass' | 'Fire' | 'Water' | 'Bug' | 'Normal';
 
-export default const CategoryScreen: React.FC = ({ navigation }) => {
-  const [category, setCategory] = useState<PokemonType>();
-}
+const categories = [
+  {
+    itemName: 'Grass',
+  },
+  {
+    itemName: 'Fire',
+  },
+  {
+    itemName: 'Water',
+  },
+  {
+    itemName: 'Bug',
+  },
+  {
+    itemName: 'Normal',
+  },
+];
 
-export default class CategoryScreen extends Component {
-  state = {
-    selectedcat: '',
-    category: [
-      {
-        itemName: 'Grass',
-      },
-      {
-        itemName: 'Fire',
-      },
-      {
-        itemName: 'Water',
-      },
-      {
-        itemName: 'Bug',
-      },
-      {
-        itemName: 'Normal',
-      },
-    ],
-  };
+const PokedexScreen: React.FC = () => {
+  // navigationNULL_POKEMONn, setPokemon] = useState<Pokemon>(NULL_POKEMON);
 
-  async onValueChangeCat(value) {
-    this.setState({ selectedcat: value });
-  }
+  const [category, setCategory] = useState<string>('Grass');
+  const [pokemons, setPokemons] = useState<Array<Pokemon>>([NULL_POKEMON]);
 
+  const navigation = useNavigation();
   const { loading, error, data } = useQuery(GET_POKEMON, {
-    variables: { type:"Grass" },
+    variables: {
+      input: {
+        type: category,
+      },
+    },
   });
+  useEffect(() => {
+    if (!loading && data) {
+      console.log(data);
+      setPokemons(data.listPokemon.pokemon);
+      console.log('data', pokemons, loading, data, '2nd');
+    }
+    // console.log(loading, loading == false, data, 'lod', error);
+  }, [loading, data, pokemons, category]);
 
-  console.log(error,data,loading)
-
-  render() {
-    return (
-      <View style={styles.viewStyle}>
+  return (
+    <View style={styles.viewStyle}>
+      <View>
         <View style={{ flex: 0.3 }}>
           <Text style={styles.textStyle}>Type</Text>
         </View>
@@ -64,31 +85,58 @@ export default class CategoryScreen extends Component {
             itemStyle={styles.itemStyle}
             mode="dropdown"
             style={styles.pickerStyle}
-            selectedValue={this.state.selectedcat}
-            onValueChange={this.onValueChangeCat.bind(this)}
+            selectedValue={category}
+            onValueChange={setCategory}
           >
-            {this.state.category.map((item, index) => (
+            {categories.map((item, index) => (
               <Picker.Item
                 color="#0087F0"
                 label={item.itemName}
                 value={item.itemName}
-                index={index}
+                key={index}
               />
             ))}
           </Picker>
         </View>
       </View>
-    );
-  }
+      <View>
+        {/* why the fuck is react native so messy... https://reactnative.dev/docs/flatlist#required-renderitem */}
+        <FlatList
+          data={pokemons}
+          renderItem={({ item, index, separators }) => (
+            <PokedexEntry
+              id={item.id}
+              name={item.name}
+              type={item.type}
+              totalPoints={item.totalPoints}
+            />
+          )}
+          // keyExtractor={(item: Pokemon) => item.id}
+        />
+      </View>
+    </View>
+  );
+};
+
+{
+  /* <View>
+  <FlatList
+    data={pokemon}
+    renderItem={PokedexEntry}
+    keyExtractor={(item) => item.id}
+  />
+</View> */
 }
+
+export default PokedexScreen;
 
 const styles = StyleSheet.create({
   viewStyle: {
     flex: 1,
     alignSelf: 'center',
-    flexDirection: 'row',
+    flexDirection: 'column',
     width: '92%',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   itemStyle: {

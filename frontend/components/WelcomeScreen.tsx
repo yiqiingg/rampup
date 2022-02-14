@@ -8,8 +8,7 @@ type RootStackParamList = {}; // TODO: ???
 const WelcomeScreen: React.FC = () => {
   const [name, setName] = React.useState('');
   const [number, onChangeNumber] = React.useState(null);
-  const navigation =
-    useNavigation<NativeStackScreenProps<RootStackParamList>>();
+  const navigation = useNavigation();
 
   return (
     <View>
